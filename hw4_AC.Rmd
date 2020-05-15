@@ -22,14 +22,6 @@ You could think of the canopy closure threshold as the size of the forest at whi
 You can think of r, as early exponential growth rate and g and the linear growth rate 
 
 1. Implement this model in R (as a differential equation)
-
-2. Run the model for 300 years (using the ODE solver)  starting with an initial forest size of 10 kg/C, and using the following parameters
--canopy closure threshold of 100 kgC 
--a carrying capacity of 500 kg C
--a early growth rate of 0.01
--a later growth rate of 2 kg/year
--an air temperature of 20C
-
 ```{r}
 # Load libraries 
 library(tidyverse)
@@ -37,7 +29,7 @@ library(deSolve)
 library(sensitivity)
 ```
 
-Graph the results
+
 ```{r}
 # Create function
 dforest_growth <- function(times, C, parms) {
@@ -48,6 +40,15 @@ dforest_growth <- function(times, C, parms) {
 }
 
 ```
+
+
+2. Run the model for 300 years (using the ODE solver)  starting with an initial forest size of 10 kg/C, and using the following parameters
+-canopy closure threshold of 100 kgC 
+-a carrying capacity of 500 kg C
+-a early growth rate of 0.01
+-a later growth rate of 2 kg/year
+-an air temperature of 20C
+Graph the results
 
 
 ```{r}
