@@ -7,6 +7,12 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+# Load libraries 
+library(tidyverse)
+library(deSolve)
+library(sensitivity)
+library(pse)
 ```
 
 Consider the following model of forest growth (where forest size in measured in units of carbon (C))
@@ -32,40 +38,96 @@ You can think of r, as early exponential growth rate and g and the linear growth
 
 Graph the results
 
-3. Run a sobol sensitivity analysis that explores how the estimated maximum forest size varies with early and later growth rates. 
-
-Graph the results of the sensitivity analysis as a box plot and a plot of the two sobol indices (S and T)
-
-Submit R markdown with model implementation, graphs and sensitivity analysis and R file with your model
-
-
 ```{r}
+source("../R/d_forest_growth.R")
 
-source("../R/forest_growth.R")
-library(deSolve)
-initialsize = 10 # initial forest size; set to 10kg/C
-years = seq(from=1, to=300, by=1)
+initial_C = 10
+years = seq(from=1, to=300, by=10)
+
+# create parameter list
+newparms = list(canopy_ct = 100, K = 500, r = 0.01, g = 2, air_T = 20)
 
 # run the solver
-Ptime = ode(y=initialsize, times=years, func=growth,parms=c(0.01))
-head(Ptime)
-colnames(Ptime)=c("year","P")
+results = ode(y=initial_C, times=years, func=dforest_growth, parms= newparms)
 
-# notice that there are additional pieces of information year, including the method used for integration
-attributes(Ptime)
+# look at results
+head(results)
+colnames(results)=c("year","Cnew")
+results_graph <- ggplot(as.data.frame(results), aes(year,Cnew)) +
+  geom_point() +
+  labs(y="Population", x = "Years")
 
-# this also means you need to extract just the data frame for plotting
-ggplot(as.data.frame(Ptime), aes(year,P))+geom_point()+labs(y="Population", "years")
+results_graph
 
-# this also works (of course function can be by order)
-Ptime=ode(initialrabbits, years, dexppop,0.03)
-colnames(Ptime)=c("year","P")
-ggplot(as.data.frame(Ptime), aes(year,P))+geom_point()+labs(y="Population", "years")
-
-# how would we add carrying capacity here
 ```
 
 
+3. Run a sobol sensitivity analysis that explores how the estimated maximum forest size varies with early and later growth rates. 
+Graph the results of the sensitivity analysis as a box plot and a plot of the two sobol indices (S and T)
+
+```{r}
+# number of parameter sets
+np = 10000
+
+# generate sample distributions of r and g
+r = rnorm(mean = 0.01, sd = 0.001, n=np)
+g = rnorm(mean = 2, sd = 0.01, n=np)
+
+x1 = cbind.data.frame(r,g)
+
+# repeat sample
+r = rnorm(mean = 0.01, sd = 0.001, n=np)
+g = rnorm(mean = 2, sd = 0.01, n=np)
+
+x2 = cbind.data.frame(r,g)
+
+##### left off here ####
+
+```
+
+
+
+```{r}
+#### edit this code####
+sens_Catm_sobel = sobol2007(model = NULL, X1, X2, nboot = 100)
+
+
+# run model for all parameter sets
+res = mapply(FUN=Catm,  mult_zo=sens_Catm_sobel$X$mult_zo,mult_zd=sens_Catm_sobel$X$mult_zd, height=sens_Catm_sobel$X$height, v=sens_Catm_sobel$X$v, MoreArgs=list(zm=30))
+
+
+sens_Catm_sobel = sensitivity::tell(sens_Catm_sobel,res, res.names="ga")
+
+# first-order indices (main effect without co-variance)
+sens_Catm_sobel$S
+
+# total sensitivity index -note that this partitions the output variance - so values sum to 1
+sens_Catm_sobel$T
+
+# The difference between the main effect and total effect can tell us something about how the parameter influences results
+# so in the main effect we include interactions with other parameters
+
+
+print(sens_Catm_sobel)
+plot(sens_Catm_sobel)
+
+# compare with LHS and PRCC
+sens_Catm$prcc
+
+
+sens_Catm_sobel$S
+sens_Catm_sobel$T
+
+# make a data frame for plotting
+both = cbind.data.frame(sens_Catm_sobel$X, gs=sens_Catm_sobel$y)
+
+# look at response of conductance to the two most important variables
+ggplot(both, aes(v,gs, col=height))+geom_point()+labs(y="Conductance (mm/s)", x="Windspeed")
+
+```
+
+
+Submit R markdown with model implementation, graphs and sensitivity analysis and R file with your model
 
 
 
