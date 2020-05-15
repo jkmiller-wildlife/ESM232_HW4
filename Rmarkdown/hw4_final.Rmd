@@ -66,7 +66,7 @@ result_graph
 
 #### 3. Run a sobol sensitivity analysis that explores how the estimated maximum forest size varies with early and later growth rates. 
 
-Graph the results of the sensitivity analysis as a box plot and a plot of the two sobol indices (S and T)
+Graph the results of the sensitivity analysis as a box plot and a plot of the two sobol indices (S and T).
 
 ```{r}
 # want to learn about sensitivity to early growth rate (r) and later growth rate (g)
