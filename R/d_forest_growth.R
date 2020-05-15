@@ -1,11 +1,13 @@
 #'  Forest growth
-#' @param C forest size; initial set to 10kg/C
+#' @param time time
+#' @param C forest size; initial set to 10kgC
 #' @param canopy_ct canopy closure threshold of 100 kgC 
-#' @param K carrying capacity; set to 500 kg C
+#' @param K carrying capacity; set to 500 kgC
 #' @param r exponential growth rate; early, set to 0.01 kg/year; 
 #' @param g linear growth rate; later, set to 2 kg/year
 #' @param air_T  air temperature; 20C
 #' @return change in canopy closure (dC) as list
+#' @author Anna Calle and Jamie Miller
 
 
 dforest_growth <- function(time, C, parms) {
