@@ -30,13 +30,15 @@ You can think of r, as early exponential growth rate and g and the linear growth
 -a later growth rate of 2 kg/year
 -an air temperature of 20C
 
-Graph the results
 ```{r}
 # Load libraries 
 library(tidyverse)
 library(deSolve)
 library(sensitivity)
+```
 
+Graph the results
+```{r}
 # Create function
 dforest_growth <- function(times, C, parms) {
   dC = ifelse( C < parms$canopy_ct, parms$r*C, parms$g)
@@ -93,7 +95,6 @@ sens_C = sobol2007(model = NULL,X1, X2, nboot = 300)
 head(sens_C$X)
 
 # turn computing our metrics into a function
-
 compute_metrics = function(result) {
   maxC = max(result$Cnew)
 idx = which.max(result$Cnew)
@@ -106,14 +107,14 @@ result = as.data.frame(result)
 # try it on our first parameter set
 compute_metrics(result)
 
-# define a wrapper function to do everything we need - run solver and compute metrics - and send back results for each parameter
-
+# define a wrapper function to do everything we need
 c_wrapper = function(r, g, initial_C, years, func) {
-    parms = list(r=r, g=g)
+    parms = list(canopy_ct = 100, K = 500, r = r, g = g, air_T = 20)
     result = ode(y=initial_C, times= years, func=dforest_growth, parms=parms) 
     colnames(result)=c("year","Cnew")
   # get metrics
-  metrics=compute_metrics(as.data.frame(result))
+    result = as.data.frame(result)
+  metrics=compute_metrics(result)
   return(metrics)
 }
 
@@ -121,15 +122,32 @@ c_wrapper = function(r, g, initial_C, years, func) {
 allresults = mapply(FUN=c_wrapper, r=sens_C$X$r, g=sens_C$X$g,
  MoreArgs=list(initial_C=initial_C, years=years, func=dforest_growth))
 
-
+# convert to dataframe and change column names
 allres = as.data.frame(matrix(unlist(allresults), ncol=2, byrow=T))
 colnames(allres) = c("maxC","maxyear")
 
 # create boxplots
 tmp = allres %>% gather(key="metric", value="value")
 ggplot(tmp, aes(metric, value, col=metric))+geom_boxplot()
+
 ```
 
+Compute the sobol indicies for each metric
+
+```{r}
+# use tell function
+sens_C_maxC = sensitivity::tell(sens_C, allres$maxC)
+
+# first-order indicex (main effect without co-variance)
+sens_C_maxC$S
+
+# total sensitivity index
+sens_C_maxC$T
+
+# plot indices
+plot(sens_C_maxC)
+
+```
 
 Submit R markdown with model implementation, graphs and sensitivity analysis and R file with your model
 
