@@ -1,5 +1,4 @@
 #'  Forest growth
-#' @param T growth period
 #' @param P forest size; initial set to 10kg/C
 #' @param Ct canopy closure threshold of 100 kgC 
 #' @param K carrying capacity; set to 500 kg C
@@ -11,7 +10,7 @@
 #' ode(y=P,time=c(1;300),growth, parms=parms)
 #'
 
-growth = function(T,P,Ct,K,r,g,temp) {
+growth = function(P,Ct,K,r,g,temp) {
   # exponnential population growth calculation
   dP = r*C
   # check to see if greater than carrying capacity
