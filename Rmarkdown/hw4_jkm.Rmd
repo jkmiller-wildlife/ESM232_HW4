@@ -1,6 +1,6 @@
 ---
 title: "ESM 232 - HW4 Dynamic Models"
-author: "Jamie Miller"
+author: "Jamie Miller and Anna Calle"
 date: "May 14, 2020"
 output: html_document
 ---
@@ -39,6 +39,31 @@ Graph the results of the sensitivity analysis as a box plot and a plot of the tw
 Submit R markdown with model implementation, graphs and sensitivity analysis and R file with your model
 
 
+```{r}
+
+source("../R/forest_growth.R")
+library(deSolve)
+initialsize = 10 # initial forest size; set to 10kg/C
+years = seq(from=1, to=300, by=1)
+
+# run the solver
+Ptime = ode(y=initialsize, times=years, func=growth,parms=c(0.01))
+head(Ptime)
+colnames(Ptime)=c("year","P")
+
+# notice that there are additional pieces of information year, including the method used for integration
+attributes(Ptime)
+
+# this also means you need to extract just the data frame for plotting
+ggplot(as.data.frame(Ptime), aes(year,P))+geom_point()+labs(y="Population", "years")
+
+# this also works (of course function can be by order)
+Ptime=ode(initialrabbits, years, dexppop,0.03)
+colnames(Ptime)=c("year","P")
+ggplot(as.data.frame(Ptime), aes(year,P))+geom_point()+labs(y="Population", "years")
+
+# how would we add carrying capacity here
+```
 
 
 
